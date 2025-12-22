@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Žodžių Dėlionė - Vaikams</title>
+    <title>Žodžių Dėlionė</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
@@ -27,9 +27,11 @@
             font-family: 'Quicksand', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            height: 100vh;
+            /* Naudojame dvh (dynamic viewport height) mobiliesiems */
+            min-height: 100vh;
+            min-height: 100dvh; 
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -39,6 +41,29 @@
         .main-card {
             background-color: var(--card-bg);
             transition: background-color 0.3s ease;
+            /* Užtikrina, kad kortelė užimtų visą aukštį, bet leistų scrolinti jei reikia */
+            height: 100%;
+            min-height: 100dvh;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Tik planšetėms ir PC darome rėmelį */
+        @media (min-width: 768px) {
+            .main-card {
+                height: auto;
+                min-height: auto;
+                aspect-ratio: auto;
+                border-width: 8px;
+                border-radius: 3rem;
+                margin: 1rem;
+                max-height: 95vh;
+            }
+            body {
+                justify-content: center;
+                overflow: hidden; /* PC nereikia scroll */
+            }
         }
 
         .slot-locked {
@@ -47,12 +72,13 @@
             color: white !important;
             transform: scale(1.05);
             pointer-events: none;
-            box-shadow: 0 4px 0 #047857;
+            box-shadow: 0 3px 0 #047857;
         }
 
         .letter-tile {
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .pool-btn-disabled {
@@ -73,8 +99,8 @@
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
         }
         .error-shake { animation: shake 0.3s ease-in-out; }
 
@@ -89,120 +115,123 @@
         .star-lost { color: #94a3b8; opacity: 0.2; }
     </style>
 </head>
-<body class="p-0 md:p-4 dark-mode">
+<body class="dark-mode">
 
-    <div id="main-app" class="main-card w-full h-full max-w-4xl md:rounded-[3rem] shadow-2xl flex flex-col relative overflow-hidden border-0 md:border-8" style="border-color: var(--border-color)">
+    <div id="main-app" class="main-card max-w-4xl relative overflow-hidden border-0 md:border-8" style="border-color: var(--border-color)">
         
         <!-- Header -->
-        <div id="header-ui" class="flex justify-between items-center p-4 md:p-6 z-10 hidden" style="background-color: rgba(0,0,0,0.05)">
+        <div id="header-ui" class="flex justify-between items-center p-3 md:p-6 z-10 hidden w-full flex-shrink-0" style="background-color: rgba(0,0,0,0.05)">
             <div class="flex gap-2">
-                <button onclick="toggleDarkMode()" id="dark-toggle" class="bg-indigo-600 text-white border-2 border-indigo-400 px-4 py-2 rounded-2xl font-bold hover:bg-indigo-500 transition-colors text-xs shadow-sm">
+                <button onclick="toggleDarkMode()" id="dark-toggle" class="bg-indigo-600 text-white border-2 border-indigo-400 px-3 py-1.5 rounded-xl font-bold hover:bg-indigo-500 transition-colors text-xs shadow-sm">
                     ☀️ Diena
                 </button>
-                <button onclick="toggleStats()" class="bg-white dark:bg-slate-700 border-2 border-yellow-300 px-4 py-2 rounded-2xl font-bold text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 transition-colors text-xs shadow-sm">
+                <button onclick="toggleStats()" class="bg-white dark:bg-slate-700 border-2 border-yellow-300 px-3 py-1.5 rounded-xl font-bold text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 transition-colors text-xs shadow-sm">
                     📊 Rezultatai
                 </button>
             </div>
-            <div class="flex gap-4 items-center">
+            <div class="flex gap-3 items-center">
                 <div class="text-right">
                     <p class="text-[10px] uppercase opacity-60 font-bold leading-none">Mano ⭐</p>
-                    <p id="total-stars-display" class="text-xl font-black text-yellow-500">0</p>
+                    <p id="total-stars-display" class="text-lg font-black text-yellow-500">0</p>
                 </div>
-                <div class="bg-yellow-400 text-white px-3 py-1 rounded-xl text-xs font-black">
+                <div class="bg-yellow-400 text-white px-2.5 py-1 rounded-lg text-xs font-black">
                     <span id="current-word-num">1</span> / <span id="max-words-num">10</span>
                 </div>
             </div>
         </div>
 
-        <!-- Start Screen -->
-        <div id="start-screen" class="absolute inset-0 z-[110] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
-            <div class="text-9xl mb-6">🦉</div>
-            <h1 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-white mb-4 uppercase tracking-tighter italic">Žodžių Naktis</h1>
-            <p class="text-slate-500 dark:text-slate-400 mb-10 text-xl">Kiek žodžių mokysimės?</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-lg">
-                <button onclick="startGame(5)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">5</button>
-                <button onclick="startGame(10)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">10</button>
-                <button onclick="startGame(20)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">20</button>
-                <button onclick="startGame(30)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">Visi</button>
+        <!-- Start Screen (Scrollable) -->
+        <div id="start-screen" class="absolute inset-0 z-[110] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
+            <div class="text-8xl mb-4 mt-auto md:mt-0">🦉</div>
+            <h1 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tighter italic">Žodžių Naktis</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-8 text-lg">Kiek žodžių mokysimės?</p>
+            <div class="grid grid-cols-2 gap-3 w-full max-w-md mb-auto md:mb-0">
+                <button onclick="startGame(5)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">5</button>
+                <button onclick="startGame(10)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">10</button>
+                <button onclick="startGame(20)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">20</button>
+                <button onclick="startGame(30)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">Visi</button>
             </div>
         </div>
 
-        <!-- Game View -->
-        <div id="game-view" class="flex-1 flex flex-col items-center justify-around py-4 md:py-8 px-2 hidden">
+        <!-- Game View (Main Content) -->
+        <div id="game-view" class="flex-1 flex flex-col items-center justify-between py-4 px-2 hidden w-full overflow-y-auto">
             
-            <!-- Emoji Container -->
-            <div id="emoji-box" class="text-8xl md:text-[10rem] select-none drop-shadow-2xl transition-all duration-500 cursor-default text-center leading-tight">
-                🌙
-            </div>
-
-            <!-- Stars Tracker (su flex-wrap) -->
-            <div id="current-word-stars-ui" class="flex flex-wrap justify-center gap-2 text-3xl md:text-4xl max-w-full px-4">
-                <!-- Stars -->
-            </div>
-
-            <div class="w-full flex flex-col items-center">
-                <div id="word-slots" class="flex flex-nowrap justify-center gap-1 md:gap-3 mb-10 w-full max-w-full px-4">
-                    <!-- Slots -->
+            <!-- Top Section: Emoji & Stars -->
+            <div class="flex flex-col items-center justify-center flex-grow-[2] w-full">
+                <div id="emoji-box" class="text-7xl md:text-[9rem] select-none drop-shadow-2xl transition-all duration-500 cursor-default text-center leading-normal mb-2">
+                    🌙
                 </div>
 
-                <div class="w-full max-w-2xl p-6 md:p-10 rounded-[3rem] border-2 border-dashed border-gray-300 dark:border-slate-600" style="background-color: var(--pool-bg)">
-                    <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-5 tracking-widest italic">Raidžių bankas:</p>
-                    <div id="letters-pool" class="flex flex-wrap justify-center gap-3 md:gap-5 min-h-[70px]">
-                        <!-- Pool -->
+                <div id="current-word-stars-ui" class="flex flex-wrap justify-center gap-1.5 text-2xl md:text-4xl min-h-[32px]">
+                    <!-- Stars -->
+                </div>
+            </div>
+
+            <!-- Bottom Section: Slots & Pool -->
+            <div class="w-full flex flex-col items-center flex-grow-[3] justify-end pb-2 md:pb-6">
+                <!-- Slots -->
+                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-3 mb-6 w-full px-1">
+                    <!-- Slots inserted here -->
+                </div>
+
+                <!-- Letter Pool -->
+                <div class="w-full max-w-xl p-4 md:p-8 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-slate-600" style="background-color: var(--pool-bg)">
+                    <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-3 tracking-widest italic">Raidžių bankas:</p>
+                    <div id="letters-pool" class="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[50px]">
+                        <!-- Letters inserted here -->
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Success Overlay -->
-        <div id="success-overlay" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-[120] flex flex-col items-center justify-center p-8 text-center">
-            <div id="success-emoji-large" class="text-[9rem] md:text-[11rem] mb-4 win-anim drop-shadow-2xl">🌟</div>
-            <h3 class="text-4xl md:text-6xl font-black text-emerald-500 mb-2 uppercase italic">TEISINGAI!</h3>
+        <div id="success-overlay" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-[120] flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
+            <div id="success-emoji-large" class="text-[8rem] md:text-[11rem] mb-2 win-anim drop-shadow-2xl mt-auto md:mt-0">🌟</div>
+            <h3 class="text-3xl md:text-6xl font-black text-emerald-500 mb-2 uppercase italic">TEISINGAI!</h3>
             
-            <!-- Stars Container (su flex-wrap ir mažesniu tekstu mob.) -->
-            <div id="success-stars-container" class="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 text-4xl md:text-5xl max-w-full">
+            <div id="success-stars-container" class="flex flex-wrap justify-center gap-2 mb-6 text-4xl md:text-5xl max-w-full">
                 <!-- Stars -->
             </div>
             
-            <div class="mb-14 w-full">
-                <span id="success-word-text" class="text-5xl md:text-9xl font-black uppercase tracking-tighter text-slate-800 dark:text-white break-words"></span>
+            <div class="mb-8 w-full">
+                <span id="success-word-text" class="text-4xl md:text-8xl font-black uppercase tracking-tighter text-slate-800 dark:text-white break-words leading-none"></span>
             </div>
-            <button onclick="loadNextWord()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-3xl md:text-5xl font-black py-7 px-20 rounded-[3rem] shadow-2xl transition-all transform hover:scale-105 active:scale-95 border-b-8 border-emerald-700">
+            <button onclick="loadNextWord()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-2xl md:text-5xl font-black py-5 px-12 rounded-[2.5rem] shadow-2xl transition-all transform hover:scale-105 active:scale-95 border-b-8 border-emerald-700 mb-auto md:mb-0">
                 TOLIAU ➔
             </button>
         </div>
 
         <!-- End Screen -->
-        <div id="end-screen" class="hidden absolute inset-0 z-[130] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
-            <div class="text-[8rem] md:text-[10rem] mb-6">🏆</div>
-            <h2 class="text-5xl md:text-7xl font-black text-slate-800 dark:text-white mb-6 uppercase italic">BAIGTA!</h2>
+        <div id="end-screen" class="hidden absolute inset-0 z-[130] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
+            <div class="text-[6rem] md:text-[10rem] mb-4 mt-auto md:mt-0">🏆</div>
+            <h2 class="text-4xl md:text-7xl font-black text-slate-800 dark:text-white mb-4 uppercase italic">BAIGTA!</h2>
             
-            <div class="bg-yellow-100 dark:bg-yellow-900/30 p-6 md:p-8 rounded-[3rem] mb-8 border-4 border-yellow-400 w-full max-w-lg">
-                <p class="text-xl md:text-2xl font-bold mb-2 opacity-70">Tavo žvaigždutės:</p>
-                <p class="text-5xl md:text-7xl font-black text-yellow-500">
+            <div class="bg-yellow-100 dark:bg-yellow-900/30 p-6 rounded-[2rem] mb-6 border-4 border-yellow-400 w-full max-w-lg">
+                <p class="text-lg md:text-2xl font-bold mb-1 opacity-70">Tavo žvaigždutės:</p>
+                <p class="text-4xl md:text-7xl font-black text-yellow-500">
                     <span id="final-stars-earned">0</span> / <span id="final-stars-possible">0</span>
                 </p>
-                <p class="mt-4 text-xl font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-widest">Šaunuolis!</p>
+                <p class="mt-2 text-lg font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-widest">Šaunuolis!</p>
             </div>
 
-            <div class="flex flex-col gap-4 w-full max-w-md">
-                <button id="retry-mistakes-btn" onclick="retryMistakes()" class="hidden bg-orange-500 hover:bg-orange-600 text-white text-2xl font-black py-5 px-10 rounded-[2.5rem] shadow-xl transition-all transform hover:scale-105 active:scale-95 border-b-4 border-orange-700">
+            <div class="flex flex-col gap-3 w-full max-w-sm mb-auto md:mb-0">
+                <button id="retry-mistakes-btn" onclick="retryMistakes()" class="hidden bg-orange-500 hover:bg-orange-600 text-white text-xl font-black py-4 px-8 rounded-[2rem] shadow-xl active:scale-95 border-b-4 border-orange-700">
                     PATAISYTI KLAIDAS 🛠️
                 </button>
                 
-                <button onclick="location.reload()" class="bg-sky-500 hover:bg-sky-600 text-white text-2xl font-black py-5 px-10 rounded-[2.5rem] shadow-xl transition-all transform hover:scale-105 active:scale-95 border-b-4 border-sky-700">
+                <button onclick="location.reload()" class="bg-sky-500 hover:bg-sky-600 text-white text-xl font-black py-4 px-8 rounded-[2rem] shadow-xl active:scale-95 border-b-4 border-sky-700">
                     ŽAISTI IŠ NAUJO 🔄
                 </button>
             </div>
         </div>
         
         <!-- Stats Modal -->
-        <div id="stats-view" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
-            <div class="p-6 bg-slate-100 dark:bg-slate-800 flex justify-between items-center">
-                <h2 class="text-xl font-black uppercase italic">Mano pasiekimai</h2>
-                <button onclick="toggleStats()" class="bg-slate-700 text-white font-bold px-6 py-2 rounded-xl text-sm">Grįžti</button>
+        <div id="stats-view" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-[140] flex flex-col">
+            <div class="p-4 bg-slate-100 dark:bg-slate-800 flex justify-between items-center flex-shrink-0">
+                <h2 class="text-lg font-black uppercase italic">Mano pasiekimai</h2>
+                <button onclick="toggleStats()" class="bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Uždaryti</button>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div class="flex-1 overflow-y-auto p-4 custom-scroll">
                 <table class="w-full text-left">
                     <tbody id="stats-table-body"></tbody>
                 </table>
@@ -251,7 +280,7 @@
             }
         }
 
-        // Updated Words Data (Fixed Snow emoji)
+        // Updated Words Data
         const wordsData = [
             { word: 'KATĖ', emoji: '🐱' }, 
             { word: 'ŠUO', emoji: '🐶' },
@@ -278,7 +307,7 @@
             { word: 'BRAŠKĖ', emoji: '🍓' }, 
             { word: 'KELIAS', emoji: '🛣️' },
             { word: 'MIŠKAS', emoji: '🌲🌳' }, 
-            { word: 'SNIEGAS', emoji: '🌨️' }, // Changed to Cloud with snow
+            { word: 'SNIEGAS', emoji: '🌨️' },
             { word: 'JŪRA', emoji: '🌊' }, 
             { word: 'KRIAUŠĖ', emoji: '🍐' },
             { word: 'LAPĖ', emoji: '🦊' }, 
@@ -321,10 +350,10 @@
             const btn = document.getElementById('dark-toggle');
             if (isDarkMode) {
                 btn.innerHTML = '☀️ Diena';
-                btn.className = 'bg-indigo-600 text-white border-2 border-indigo-400 px-4 py-2 rounded-2xl font-bold text-xs shadow-sm';
+                btn.className = 'bg-indigo-600 text-white border-2 border-indigo-400 px-3 py-1.5 rounded-xl font-bold hover:bg-indigo-500 transition-colors text-xs shadow-sm';
             } else {
                 btn.innerHTML = '🌙 Naktis';
-                btn.className = 'bg-slate-800 text-white border-2 border-slate-600 px-4 py-2 rounded-2xl font-bold text-xs shadow-sm';
+                btn.className = 'bg-slate-800 text-white border-2 border-slate-600 px-3 py-1.5 rounded-xl font-bold text-xs shadow-sm';
             }
         }
 
@@ -343,7 +372,9 @@
             
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('header-ui').classList.remove('hidden');
+            document.getElementById('header-ui').classList.add('flex'); // Add flex back
             document.getElementById('game-view').classList.remove('hidden');
+            document.getElementById('game-view').classList.add('flex'); // Add flex back
             
             loadWord();
         }
@@ -410,18 +441,19 @@
         function render() {
             slotsEl.innerHTML = '';
             const wordLen = currentWordObj.word.length;
-            const baseWidth = Math.min(18, 85 / wordLen); 
-            const fontSize = Math.min(3.8, 16 / wordLen);
+            // Improved responsive calculation
+            const baseWidth = Math.min(16, 82 / wordLen); 
+            const fontSize = Math.min(3.2, 14 / wordLen);
 
             userProgress.forEach((char, i) => {
                 const slot = document.createElement('div');
                 slot.style.width = `${baseWidth}vw`;
                 slot.style.height = `${baseWidth}vw`;
-                slot.style.maxWidth = '90px';
-                slot.style.maxHeight = '90px';
+                slot.style.maxWidth = '80px';
+                slot.style.maxHeight = '80px';
                 slot.style.fontSize = `${fontSize}rem`;
                 
-                slot.className = `border-4 rounded-2xl md:rounded-[2.5rem] flex items-center justify-center font-black letter-tile flex-shrink-0
+                slot.className = `border-4 rounded-xl md:rounded-[2rem] flex items-center justify-center font-black letter-tile flex-shrink-0
                                  ${lockedSlots[i] ? 'slot-locked' : char ? 'bg-sky-500 border-sky-700 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-95 shadow-sm'}`;
                 slot.textContent = char || '';
                 slotsEl.appendChild(slot);
@@ -430,8 +462,8 @@
             poolEl.innerHTML = '';
             currentPool.forEach(item => {
                 const btn = document.createElement('button');
-                btn.className = `w-14 h-14 md:w-20 md:h-20 rounded-[2rem] text-3xl md:text-5xl font-black shadow-lg letter-tile
-                                 ${item.used ? 'pool-btn-disabled' : 'bg-white dark:bg-slate-700 border-b-8 border-slate-200 dark:border-slate-800 hover:bg-yellow-50 dark:hover:bg-slate-600 active:border-b-0 active:translate-y-2 text-slate-700 dark:text-slate-100'}`;
+                btn.className = `w-12 h-12 md:w-16 md:h-16 rounded-2xl text-2xl md:text-4xl font-black shadow-lg letter-tile
+                                 ${item.used ? 'pool-btn-disabled' : 'bg-white dark:bg-slate-700 border-b-4 md:border-b-8 border-slate-200 dark:border-slate-800 hover:bg-yellow-50 dark:hover:bg-slate-600 active:border-b-0 active:translate-y-1 text-slate-700 dark:text-slate-100'}`;
                 btn.textContent = item.char;
                 btn.onclick = () => !item.used && placeLetter(item);
                 poolEl.appendChild(btn);
@@ -508,10 +540,8 @@
             document.getElementById('final-stars-earned').textContent = totalStarsEarned;
             document.getElementById('final-stars-possible').textContent = totalPossibleStars;
             
-            // Check for any remaining mistakes in THIS specific batch
             const imperfects = gameWords.filter(w => (wordMistakes[w.word] || 0) > 0);
             
-            // Only show retry if there are imperfects AND we haven't just achieved perfection
             if (imperfects.length > 0) {
                 retryBtn.classList.remove('hidden');
                 retryBtn.textContent = `PATAISYTI KLAIDAS (${imperfects.length}) 🛠️`;
@@ -532,7 +562,6 @@
             const tbody = document.getElementById('stats-table-body');
             tbody.innerHTML = '';
             
-            // Display stats for currently active gameWords set
             const stats = gameWords.map(w => ({
                 word: w.word,
                 emoji: w.emoji,
@@ -543,7 +572,7 @@
             stats.forEach(item => {
                 const row = document.createElement('tr');
                 row.className = "border-b border-slate-100 dark:border-slate-800";
-                row.innerHTML = `<td class="py-5 font-bold text-xl">${item.emoji} ${item.word}</td><td class="text-center font-black text-rose-500 text-xl">${item.mistakes}</td><td class="text-right text-xs font-bold uppercase opacity-40">${item.finished ? 'Baigta' : 'Dabar'}</td>`;
+                row.innerHTML = `<td class="py-4 font-bold text-lg">${item.emoji} ${item.word}</td><td class="text-center font-black text-rose-500 text-lg">${item.mistakes}</td><td class="text-right text-[10px] font-bold uppercase opacity-40">${item.finished ? 'Baigta' : 'Dabar'}</td>`;
                 tbody.appendChild(row);
             });
         }
