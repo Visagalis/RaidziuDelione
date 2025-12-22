@@ -2,7 +2,10 @@
 <html lang="lt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Žodžių Dėlionė</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
@@ -27,11 +30,11 @@
             font-family: 'Quicksand', sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
-            /* Naudojame dvh (dynamic viewport height) mobiliesiems */
-            min-height: 100vh;
-            min-height: 100dvh; 
+            /* Svarbu: užtikrina pilną aukštį ir saugias zonas */
+            height: 100vh;
+            height: 100dvh;
             margin: 0;
-            overflow-x: hidden;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -41,28 +44,29 @@
         .main-card {
             background-color: var(--card-bg);
             transition: background-color 0.3s ease;
-            /* Užtikrina, kad kortelė užimtų visą aukštį, bet leistų scrolinti jei reikia */
             height: 100%;
-            min-height: 100dvh;
             width: 100%;
             display: flex;
             flex-direction: column;
+            
+            /* Saugios zonos mobiliesiems (Notch/Home bar fix) */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
 
-        /* Tik planšetėms ir PC darome rėmelį */
+        /* PC stilius išlieka gražus su rėmeliu */
         @media (min-width: 768px) {
             .main-card {
                 height: auto;
-                min-height: auto;
                 aspect-ratio: auto;
                 border-width: 8px;
                 border-radius: 3rem;
                 margin: 1rem;
                 max-height: 95vh;
-            }
-            body {
-                justify-content: center;
-                overflow: hidden; /* PC nereikia scroll */
+                padding-top: 0; /* PC nereikia notch padding */
+                padding-bottom: 0;
             }
         }
 
@@ -119,14 +123,14 @@
 
     <div id="main-app" class="main-card max-w-4xl relative overflow-hidden border-0 md:border-8" style="border-color: var(--border-color)">
         
-        <!-- Header -->
-        <div id="header-ui" class="flex justify-between items-center p-3 md:p-6 z-10 hidden w-full flex-shrink-0" style="background-color: rgba(0,0,0,0.05)">
+        <!-- Header (Su papildomu padding viršuje saugumui) -->
+        <div id="header-ui" class="flex justify-between items-center px-4 py-3 z-20 hidden w-full flex-shrink-0 border-b border-black/5 dark:border-white/5" style="background-color: rgba(0,0,0,0.02)">
             <div class="flex gap-2">
                 <button onclick="toggleDarkMode()" id="dark-toggle" class="bg-indigo-600 text-white border-2 border-indigo-400 px-3 py-1.5 rounded-xl font-bold hover:bg-indigo-500 transition-colors text-xs shadow-sm">
                     ☀️ Diena
                 </button>
                 <button onclick="toggleStats()" class="bg-white dark:bg-slate-700 border-2 border-yellow-300 px-3 py-1.5 rounded-xl font-bold text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 transition-colors text-xs shadow-sm">
-                    📊 Rezultatai
+                    📊
                 </button>
             </div>
             <div class="flex gap-3 items-center">
@@ -140,7 +144,7 @@
             </div>
         </div>
 
-        <!-- Start Screen (Scrollable) -->
+        <!-- Start Screen -->
         <div id="start-screen" class="absolute inset-0 z-[110] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
             <div class="text-8xl mb-4 mt-auto md:mt-0">🦉</div>
             <h1 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-white mb-2 uppercase tracking-tighter italic">Žodžių Naktis</h1>
@@ -153,32 +157,30 @@
             </div>
         </div>
 
-        <!-- Game View (Main Content) -->
-        <div id="game-view" class="flex-1 flex flex-col items-center justify-between py-4 px-2 hidden w-full overflow-y-auto">
+        <!-- Game View -->
+        <div id="game-view" class="flex-1 flex flex-col items-center justify-between py-2 px-2 hidden w-full overflow-y-auto">
             
-            <!-- Top Section: Emoji & Stars -->
-            <div class="flex flex-col items-center justify-center flex-grow-[2] w-full">
+            <!-- Top: Emoji & Stars -->
+            <div class="flex flex-col items-center justify-center flex-grow-[2] w-full min-h-0">
                 <div id="emoji-box" class="text-7xl md:text-[9rem] select-none drop-shadow-2xl transition-all duration-500 cursor-default text-center leading-normal mb-2">
                     🌙
                 </div>
 
-                <div id="current-word-stars-ui" class="flex flex-wrap justify-center gap-1.5 text-2xl md:text-4xl min-h-[32px]">
+                <div id="current-word-stars-ui" class="flex flex-wrap justify-center gap-1.5 text-2xl md:text-4xl px-4">
                     <!-- Stars -->
                 </div>
             </div>
 
-            <!-- Bottom Section: Slots & Pool -->
-            <div class="w-full flex flex-col items-center flex-grow-[3] justify-end pb-2 md:pb-6">
-                <!-- Slots -->
-                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-3 mb-6 w-full px-1">
-                    <!-- Slots inserted here -->
+            <!-- Bottom: Slots & Pool -->
+            <div class="w-full flex flex-col items-center flex-grow-[3] justify-end pb-2 md:pb-4">
+                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-3 mb-4 md:mb-6 w-full px-1 min-h-[50px]">
+                    <!-- Slots -->
                 </div>
 
-                <!-- Letter Pool -->
-                <div class="w-full max-w-xl p-4 md:p-8 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-slate-600" style="background-color: var(--pool-bg)">
-                    <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-3 tracking-widest italic">Raidžių bankas:</p>
+                <div class="w-full max-w-xl p-3 md:p-8 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-slate-600 flex flex-col justify-center" style="background-color: var(--pool-bg)">
+                    <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-2 tracking-widest italic">Raidžių bankas:</p>
                     <div id="letters-pool" class="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[50px]">
-                        <!-- Letters inserted here -->
+                        <!-- Letters -->
                     </div>
                 </div>
             </div>
@@ -193,7 +195,7 @@
                 <!-- Stars -->
             </div>
             
-            <div class="mb-8 w-full">
+            <div class="mb-8 w-full px-4">
                 <span id="success-word-text" class="text-4xl md:text-8xl font-black uppercase tracking-tighter text-slate-800 dark:text-white break-words leading-none"></span>
             </div>
             <button onclick="loadNextWord()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-2xl md:text-5xl font-black py-5 px-12 rounded-[2.5rem] shadow-2xl transition-all transform hover:scale-105 active:scale-95 border-b-8 border-emerald-700 mb-auto md:mb-0">
@@ -227,7 +229,7 @@
         
         <!-- Stats Modal -->
         <div id="stats-view" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-[140] flex flex-col">
-            <div class="p-4 bg-slate-100 dark:bg-slate-800 flex justify-between items-center flex-shrink-0">
+            <div class="p-4 bg-slate-100 dark:bg-slate-800 flex justify-between items-center flex-shrink-0 pt-12 md:pt-4">
                 <h2 class="text-lg font-black uppercase italic">Mano pasiekimai</h2>
                 <button onclick="toggleStats()" class="bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Uždaryti</button>
             </div>
@@ -280,7 +282,6 @@
             }
         }
 
-        // Updated Words Data
         const wordsData = [
             { word: 'KATĖ', emoji: '🐱' }, 
             { word: 'ŠUO', emoji: '🐶' },
@@ -372,9 +373,9 @@
             
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('header-ui').classList.remove('hidden');
-            document.getElementById('header-ui').classList.add('flex'); // Add flex back
+            document.getElementById('header-ui').classList.add('flex');
             document.getElementById('game-view').classList.remove('hidden');
-            document.getElementById('game-view').classList.add('flex'); // Add flex back
+            document.getElementById('game-view').classList.add('flex');
             
             loadWord();
         }
@@ -441,7 +442,6 @@
         function render() {
             slotsEl.innerHTML = '';
             const wordLen = currentWordObj.word.length;
-            // Improved responsive calculation
             const baseWidth = Math.min(16, 82 / wordLen); 
             const fontSize = Math.min(3.2, 14 / wordLen);
 
