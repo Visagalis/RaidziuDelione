@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Žodžių Dėlionė - Vaikams</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #fdfcf0;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --border-color: #fef08a;
+            --pool-bg: #fffbeb;
+        }
+
+        .dark-mode {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --border-color: #334155;
+            --pool-bg: #0f172a;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .main-card {
+            background-color: var(--card-bg);
+            transition: background-color 0.3s ease;
+        }
+
+        .slot-locked {
+            background-color: #10b981 !important;
+            border-color: #059669 !important;
+            color: white !important;
+            transform: scale(1.05);
+            pointer-events: none;
+            box-shadow: 0 4px 0 #047857;
+        }
+
+        .letter-tile {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            touch-action: manipulation;
+        }
+
+        .pool-btn-disabled {
+            background-color: #e2e8f0 !important;
+            color: #94a3b8 !important;
+            border-color: #cbd5e1 !important;
+            pointer-events: none;
+            box-shadow: none !important;
+            transform: none !important;
+            opacity: 0.3;
+        }
+
+        .dark-mode .pool-btn-disabled {
+            background-color: #334155 !important;
+            color: #475569 !important;
+            border-color: #1e293b !important;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .error-shake { animation: shake 0.3s ease-in-out; }
+
+        @keyframes celebration {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1) rotate(3deg); }
+            100% { transform: scale(1); }
+        }
+        .win-anim { animation: celebration 0.5s ease-in-out infinite; }
+        
+        .star-gold { color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.4); }
+        .star-lost { color: #94a3b8; opacity: 0.2; }
+    </style>
+</head>
+<body class="p-0 md:p-4 dark-mode">
+
+    <div id="main-app" class="main-card w-full h-full max-w-4xl md:rounded-[3rem] shadow-2xl flex flex-col relative overflow-hidden border-0 md:border-8" style="border-color: var(--border-color)">
+        
+        <!-- Header -->
+        <div id="header-ui" class="flex justify-between items-center p-4 md:p-6 z-10 hidden" style="background-color: rgba(0,0,0,0.05)">
+            <div class="flex gap-2">
+                <button onclick="toggleDarkMode()" id="dark-toggle" class="bg-indigo-600 text-white border-2 border-indigo-400 px-4 py-2 rounded-2xl font-bold hover:bg-indigo-500 transition-colors text-xs shadow-sm">
+                    ☀️ Diena
+                </button>
+                <button onclick="toggleStats()" class="bg-white dark:bg-slate-700 border-2 border-yellow-300 px-4 py-2 rounded-2xl font-bold text-yellow-700 dark:text-yellow-400 hover:bg-yellow-50 transition-colors text-xs shadow-sm">
+                    📊 Rezultatai
+                </button>
+            </div>
+            <div class="flex gap-4 items-center">
+                <div class="text-right">
+                    <p class="text-[10px] uppercase opacity-60 font-bold leading-none">Mano ⭐</p>
+                    <p id="total-stars-display" class="text-xl font-black text-yellow-500">0</p>
+                </div>
+                <div class="bg-yellow-400 text-white px-3 py-1 rounded-xl text-xs font-black">
+                    <span id="current-word-num">1</span> / <span id="max-words-num">10</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="absolute inset-0 z-[110] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
+            <div class="text-9xl mb-6">🦉</div>
+            <h1 class="text-4xl md:text-6xl font-black text-slate-800 dark:text-white mb-4 uppercase tracking-tighter italic">Žodžių Naktis</h1>
+            <p class="text-slate-500 dark:text-slate-400 mb-10 text-xl">Kiek žodžių mokysimės?</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-lg">
+                <button onclick="startGame(5)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">5</button>
+                <button onclick="startGame(10)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">10</button>
+                <button onclick="startGame(20)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">20</button>
+                <button onclick="startGame(30)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-5 rounded-3xl text-3xl shadow-lg transform active:scale-95">Visi</button>
+            </div>
+        </div>
+
+        <!-- Game View -->
+        <div id="game-view" class="flex-1 flex flex-col items-center justify-around py-4 md:py-8 px-2 hidden">
+            
+            <!-- Emoji Container -->
+            <div id="emoji-box" class="text-8xl md:text-[10rem] select-none drop-shadow-2xl transition-all duration-500 cursor-default text-center leading-tight">
+                🌙
+            </div>
+
+            <!-- Stars Tracker (su flex-wrap) -->
+            <div id="current-word-stars-ui" class="flex flex-wrap justify-center gap-2 text-3xl md:text-4xl max-w-full px-4">
+                <!-- Stars -->
+            </div>
+
+            <div class="w-full flex flex-col items-center">
+                <div id="word-slots" class="flex flex-nowrap justify-center gap-1 md:gap-3 mb-10 w-full max-w-full px-4">
+                    <!-- Slots -->
+                </div>
+
+                <div class="w-full max-w-2xl p-6 md:p-10 rounded-[3rem] border-2 border-dashed border-gray-300 dark:border-slate-600" style="background-color: var(--pool-bg)">
+                    <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-5 tracking-widest italic">Raidžių bankas:</p>
+                    <div id="letters-pool" class="flex flex-wrap justify-center gap-3 md:gap-5 min-h-[70px]">
+                        <!-- Pool -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Overlay -->
+        <div id="success-overlay" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-[120] flex flex-col items-center justify-center p-8 text-center">
+            <div id="success-emoji-large" class="text-[9rem] md:text-[11rem] mb-4 win-anim drop-shadow-2xl">🌟</div>
+            <h3 class="text-4xl md:text-6xl font-black text-emerald-500 mb-2 uppercase italic">TEISINGAI!</h3>
+            
+            <!-- Stars Container (su flex-wrap ir mažesniu tekstu mob.) -->
+            <div id="success-stars-container" class="flex flex-wrap justify-center gap-2 md:gap-3 mb-8 text-4xl md:text-5xl max-w-full">
+                <!-- Stars -->
+            </div>
+            
+            <div class="mb-14 w-full">
+                <span id="success-word-text" class="text-5xl md:text-9xl font-black uppercase tracking-tighter text-slate-800 dark:text-white break-words"></span>
+            </div>
+            <button onclick="loadNextWord()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-3xl md:text-5xl font-black py-7 px-20 rounded-[3rem] shadow-2xl transition-all transform hover:scale-105 active:scale-95 border-b-8 border-emerald-700">
+                TOLIAU ➔
+            </button>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden absolute inset-0 z-[130] bg-white dark:bg-slate-900 flex flex-col items-center justify-center p-8 text-center">
+            <div class="text-[8rem] md:text-[10rem] mb-6">🏆</div>
+            <h2 class="text-5xl md:text-7xl font-black text-slate-800 dark:text-white mb-6 uppercase italic">BAIGTA!</h2>
+            
+            <div class="bg-yellow-100 dark:bg-yellow-900/30 p-6 md:p-8 rounded-[3rem] mb-8 border-4 border-yellow-400 w-full max-w-lg">
+                <p class="text-xl md:text-2xl font-bold mb-2 opacity-70">Tavo žvaigždutės:</p>
+                <p class="text-5xl md:text-7xl font-black text-yellow-500">
+                    <span id="final-stars-earned">0</span> / <span id="final-stars-possible">0</span>
+                </p>
+                <p class="mt-4 text-xl font-bold text-yellow-600 dark:text-yellow-400 uppercase tracking-widest">Šaunuolis!</p>
+            </div>
+
+            <div class="flex flex-col gap-4 w-full max-w-md">
+                <button id="retry-mistakes-btn" onclick="retryMistakes()" class="hidden bg-orange-500 hover:bg-orange-600 text-white text-2xl font-black py-5 px-10 rounded-[2.5rem] shadow-xl transition-all transform hover:scale-105 active:scale-95 border-b-4 border-orange-700">
+                    PATAISYTI KLAIDAS 🛠️
+                </button>
+                
+                <button onclick="location.reload()" class="bg-sky-500 hover:bg-sky-600 text-white text-2xl font-black py-5 px-10 rounded-[2.5rem] shadow-xl transition-all transform hover:scale-105 active:scale-95 border-b-4 border-sky-700">
+                    ŽAISTI IŠ NAUJO 🔄
+                </button>
+            </div>
+        </div>
+        
+        <!-- Stats Modal -->
+        <div id="stats-view" class="hidden absolute inset-0 bg-white dark:bg-slate-900 z-50 flex flex-col">
+            <div class="p-6 bg-slate-100 dark:bg-slate-800 flex justify-between items-center">
+                <h2 class="text-xl font-black uppercase italic">Mano pasiekimai</h2>
+                <button onclick="toggleStats()" class="bg-slate-700 text-white font-bold px-6 py-2 rounded-xl text-sm">Grįžti</button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8">
+                <table class="w-full text-left">
+                    <tbody id="stats-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- AUDIO ENGINE ---
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(550, now);
+                osc.frequency.exponentialRampToValueAtTime(1100, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.linearRampToValueAtTime(45, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now); osc.stop(now + 0.2);
+            } else if (type === 'win') {
+                [523, 659, 783, 1046].forEach((f, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(f, now + (i * 0.1));
+                    g.gain.setValueAtTime(0.1, now + (i * 0.1));
+                    g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 0.4);
+                    o.start(now + (i * 0.1)); o.stop(now + (i * 0.1) + 0.4);
+                });
+            }
+        }
+
+        // Updated Words Data (Fixed Snow emoji)
+        const wordsData = [
+            { word: 'KATĖ', emoji: '🐱' }, 
+            { word: 'ŠUO', emoji: '🐶' },
+            { word: 'NAMAS', emoji: '🏠' }, 
+            { word: 'GĖLĖ', emoji: '🌸' },
+            { word: 'MEDIS', emoji: '🌳' }, 
+            { word: 'SAULĖ', emoji: '☀️' },
+            { word: 'RATAS', emoji: '🛞' }, 
+            { word: 'BATAI', emoji: '👟👟' }, 
+            { word: 'MORKA', emoji: '🥕' }, 
+            { word: 'PELĖ', emoji: '🐭' },
+            { word: 'BITĖ', emoji: '🐝' }, 
+            { word: 'KNYGA', emoji: '📖' },
+            { word: 'VARLĖ', emoji: '🐸' }, 
+            { word: 'LEDAI', emoji: '🍦🍦' }, 
+            { word: 'SŪRIS', emoji: '🧀' }, 
+            { word: 'ŽUVIS', emoji: '🐟' },
+            { word: 'LOVA', emoji: '🛏️' },
+            { word: 'KĖDĖ', emoji: '🪑' },
+            { word: 'DUONA', emoji: '🍞' }, 
+            { word: 'PIENAS', emoji: '🥛' },
+            { word: 'OBUOLYS', emoji: '🍎' }, 
+            { word: 'VIŠTA', emoji: '🐔' },
+            { word: 'BRAŠKĖ', emoji: '🍓' }, 
+            { word: 'KELIAS', emoji: '🛣️' },
+            { word: 'MIŠKAS', emoji: '🌲🌳' }, 
+            { word: 'SNIEGAS', emoji: '🌨️' }, // Changed to Cloud with snow
+            { word: 'JŪRA', emoji: '🌊' }, 
+            { word: 'KRIAUŠĖ', emoji: '🍐' },
+            { word: 'LAPĖ', emoji: '🦊' }, 
+            { word: 'MEŠKA', emoji: '🐻' }
+        ];
+
+        let gameWords = [];
+        let currentIndex = 0;
+        let totalStarsEarned = 0;
+        let totalPossibleStars = 0; 
+        let currentWordObj = null;
+        let userProgress = []; 
+        let lockedSlots = [];
+        let currentPool = []; 
+        let wordMistakes = {};
+        let isDarkMode = true;
+        let maxWordsCount = 10;
+        let currentWordStarPotential = 0;
+        let isRetryMode = false;
+
+        const slotsEl = document.getElementById('word-slots');
+        const poolEl = document.getElementById('letters-pool');
+        const emojiEl = document.getElementById('emoji-box');
+        const overlay = document.getElementById('success-overlay');
+        const successWordText = document.getElementById('success-word-text');
+        const successEmojiLarge = document.getElementById('success-emoji-large');
+        const starTotalDisplay = document.getElementById('total-stars-display');
+        const currentWordNumEl = document.getElementById('current-word-num');
+        const maxWordsNumEl = document.getElementById('max-words-num');
+        const starPotentialUI = document.getElementById('current-word-stars-ui');
+        const retryBtn = document.getElementById('retry-mistakes-btn');
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            const btn = document.getElementById('dark-toggle');
+            if (isDarkMode) {
+                btn.innerHTML = '☀️ Diena';
+                btn.className = 'bg-indigo-600 text-white border-2 border-indigo-400 px-4 py-2 rounded-2xl font-bold text-xs shadow-sm';
+            } else {
+                btn.innerHTML = '🌙 Naktis';
+                btn.className = 'bg-slate-800 text-white border-2 border-slate-600 px-4 py-2 rounded-2xl font-bold text-xs shadow-sm';
+            }
+        }
+
+        function startGame(count) {
+            isRetryMode = false;
+            maxWordsCount = Math.min(count, wordsData.length);
+            gameWords = shuffle([...wordsData]).slice(0, maxWordsCount);
+            wordMistakes = {}; 
+            
+            totalPossibleStars = gameWords.reduce((acc, obj) => acc + obj.word.length, 0);
+            totalStarsEarned = 0;
+            
+            currentIndex = 0;
+            updateStarDisplay();
+            maxWordsNumEl.textContent = maxWordsCount;
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('header-ui').classList.remove('hidden');
+            document.getElementById('game-view').classList.remove('hidden');
+            
+            loadWord();
+        }
+
+        function updateStarDisplay() {
+            starTotalDisplay.textContent = totalStarsEarned;
+        }
+
+        function retryMistakes() {
+            isRetryMode = true;
+            const imperfects = gameWords.filter(w => (wordMistakes[w.word] || 0) > 0);
+            
+            imperfects.forEach(w => {
+                const mistakes = wordMistakes[w.word];
+                const length = w.word.length;
+                const earnedForThis = Math.max(1, length - mistakes);
+                totalStarsEarned -= earnedForThis;
+            });
+            updateStarDisplay();
+
+            gameWords = shuffle([...imperfects]);
+            gameWords.forEach(w => wordMistakes[w.word] = 0);
+            
+            currentIndex = 0;
+            document.getElementById('end-screen').classList.add('hidden');
+            loadWord();
+        }
+
+        function loadWord() {
+            currentWordObj = gameWords[currentIndex];
+            const word = currentWordObj.word;
+            userProgress = Array(word.length).fill(null);
+            lockedSlots = Array(word.length).fill(false);
+            
+            currentWordStarPotential = word.length;
+            
+            currentPool = word.split('').map((char, index) => ({
+                char: char,
+                id: index,
+                used: false
+            }));
+            shuffle(currentPool);
+
+            if (!wordMistakes[word]) wordMistakes[word] = 0;
+
+            emojiEl.textContent = currentWordObj.emoji;
+            currentWordNumEl.textContent = isRetryMode ? '↺' : (currentIndex + 1);
+            overlay.classList.add('hidden');
+            
+            updateStarPotentialUI();
+            render();
+        }
+
+        function updateStarPotentialUI() {
+            starPotentialUI.innerHTML = '';
+            for (let i = 0; i < currentWordObj.word.length; i++) {
+                const star = document.createElement('span');
+                star.textContent = '⭐';
+                star.className = i < currentWordStarPotential ? 'star-gold' : 'star-lost';
+                starPotentialUI.appendChild(star);
+            }
+        }
+
+        function render() {
+            slotsEl.innerHTML = '';
+            const wordLen = currentWordObj.word.length;
+            const baseWidth = Math.min(18, 85 / wordLen); 
+            const fontSize = Math.min(3.8, 16 / wordLen);
+
+            userProgress.forEach((char, i) => {
+                const slot = document.createElement('div');
+                slot.style.width = `${baseWidth}vw`;
+                slot.style.height = `${baseWidth}vw`;
+                slot.style.maxWidth = '90px';
+                slot.style.maxHeight = '90px';
+                slot.style.fontSize = `${fontSize}rem`;
+                
+                slot.className = `border-4 rounded-2xl md:rounded-[2.5rem] flex items-center justify-center font-black letter-tile flex-shrink-0
+                                 ${lockedSlots[i] ? 'slot-locked' : char ? 'bg-sky-500 border-sky-700 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-95 shadow-sm'}`;
+                slot.textContent = char || '';
+                slotsEl.appendChild(slot);
+            });
+
+            poolEl.innerHTML = '';
+            currentPool.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = `w-14 h-14 md:w-20 md:h-20 rounded-[2rem] text-3xl md:text-5xl font-black shadow-lg letter-tile
+                                 ${item.used ? 'pool-btn-disabled' : 'bg-white dark:bg-slate-700 border-b-8 border-slate-200 dark:border-slate-800 hover:bg-yellow-50 dark:hover:bg-slate-600 active:border-b-0 active:translate-y-2 text-slate-700 dark:text-slate-100'}`;
+                btn.textContent = item.char;
+                btn.onclick = () => !item.used && placeLetter(item);
+                poolEl.appendChild(btn);
+            });
+        }
+
+        function placeLetter(poolItem) {
+            const emptyIdx = userProgress.indexOf(null);
+            if (emptyIdx !== -1) {
+                if (currentWordObj.word[emptyIdx] === poolItem.char) {
+                    playSound('correct');
+                    userProgress[emptyIdx] = poolItem.char;
+                    lockedSlots[emptyIdx] = true;
+                    poolItem.used = true; 
+                    render();
+                    checkWin();
+                } else {
+                    playSound('error');
+                    wordMistakes[currentWordObj.word]++;
+                    
+                    if (currentWordStarPotential > 1) {
+                        currentWordStarPotential--;
+                        updateStarPotentialUI();
+                    }
+                    
+                    const slots = slotsEl.children;
+                    const tempErrorSlot = slots[emptyIdx];
+                    tempErrorSlot.textContent = poolItem.char;
+                    tempErrorSlot.classList.add('error-shake', 'bg-rose-500', 'border-rose-700', 'text-white');
+                    
+                    setTimeout(() => {
+                        tempErrorSlot.textContent = '';
+                        tempErrorSlot.classList.remove('error-shake', 'bg-rose-500', 'border-rose-700', 'text-white');
+                    }, 450);
+                }
+            }
+        }
+
+        function checkWin() {
+            if (lockedSlots.every(s => s === true)) {
+                totalStarsEarned += currentWordStarPotential;
+                updateStarDisplay();
+                
+                playSound('win');
+                successEmojiLarge.textContent = currentWordObj.emoji;
+                successWordText.textContent = currentWordObj.word;
+                
+                const starsOverlayContainer = document.getElementById('success-stars-container');
+                starsOverlayContainer.innerHTML = '';
+                for(let i=0; i<currentWordStarPotential; i++) {
+                    const s = document.createElement('span');
+                    s.textContent = '⭐';
+                    s.className = 'win-anim inline-block';
+                    s.style.animationDelay = `${i * 0.1}s`;
+                    starsOverlayContainer.appendChild(s);
+                }
+                
+                setTimeout(() => {
+                    overlay.classList.remove('hidden');
+                }, 400);
+            }
+        }
+
+        function loadNextWord() {
+            currentIndex++;
+            if (currentIndex >= gameWords.length) {
+                showFinalResults();
+            } else {
+                loadWord();
+            }
+        }
+
+        function showFinalResults() {
+            document.getElementById('final-stars-earned').textContent = totalStarsEarned;
+            document.getElementById('final-stars-possible').textContent = totalPossibleStars;
+            
+            // Check for any remaining mistakes in THIS specific batch
+            const imperfects = gameWords.filter(w => (wordMistakes[w.word] || 0) > 0);
+            
+            // Only show retry if there are imperfects AND we haven't just achieved perfection
+            if (imperfects.length > 0) {
+                retryBtn.classList.remove('hidden');
+                retryBtn.textContent = `PATAISYTI KLAIDAS (${imperfects.length}) 🛠️`;
+            } else {
+                retryBtn.classList.add('hidden');
+            }
+
+            document.getElementById('end-screen').classList.remove('hidden');
+        }
+
+        function toggleStats() {
+            const statsView = document.getElementById('stats-view');
+            statsView.classList.toggle('hidden');
+            if (!statsView.classList.contains('hidden')) updateStatsTable();
+        }
+
+        function updateStatsTable() {
+            const tbody = document.getElementById('stats-table-body');
+            tbody.innerHTML = '';
+            
+            // Display stats for currently active gameWords set
+            const stats = gameWords.map(w => ({
+                word: w.word,
+                emoji: w.emoji,
+                mistakes: wordMistakes[w.word] || 0,
+                finished: gameWords.indexOf(w) < currentIndex
+            }));
+
+            stats.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = "border-b border-slate-100 dark:border-slate-800";
+                row.innerHTML = `<td class="py-5 font-bold text-xl">${item.emoji} ${item.word}</td><td class="text-center font-black text-rose-500 text-xl">${item.mistakes}</td><td class="text-right text-xs font-bold uppercase opacity-40">${item.finished ? 'Baigta' : 'Dabar'}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
+
