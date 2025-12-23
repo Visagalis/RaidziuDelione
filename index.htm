@@ -35,20 +35,21 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             height: 100vh;
-            height: 100dvh; /* Dynamic viewport height */
+            height: 100dvh;
             margin: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             transition: all 0.3s ease;
+            user-select: none;
         }
 
         .fullscreen-overlay {
             background-color: var(--overlay-bg);
             color: var(--text-main);
             transition: background-color 0.3s ease, color 0.3s ease;
-            padding-bottom: env(safe-area-inset-bottom); /* Safe area for overlays */
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         .main-card {
@@ -58,8 +59,8 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            /* Remove main padding to handle scroll areas individually */
-            padding-top: env(safe-area-inset-top); 
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
@@ -73,6 +74,7 @@
                 margin: 1rem;
                 max-height: 95vh;
                 padding-top: 0;
+                padding-bottom: 0;
             }
         }
 
@@ -124,10 +126,11 @@
         .star-gold { color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.4); }
         .star-lost { color: #94a3b8; opacity: 0.2; }
 
-        /* Ensure bottom area has safe spacing */
-        .safe-bottom {
-            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
-        }
+        .custom-scroll::-webkit-scrollbar { width: 6px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark-mode .custom-scroll::-webkit-scrollbar-thumb { background-color: #475569; }
+        
+        .safe-bottom { padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
     </style>
 </head>
 <body class="dark-mode">
@@ -156,17 +159,29 @@
         </div>
 
         <!-- Start Screen -->
-        <div id="start-screen" class="fullscreen-overlay absolute inset-0 z-[110] flex flex-col items-center justify-center p-4 text-center overflow-y-auto safe-bottom">
+        <div id="start-screen" class="fullscreen-overlay absolute inset-0 z-[110] flex flex-col items-center justify-center p-4 text-center overflow-y-auto custom-scroll safe-bottom">
             <div class="text-8xl mb-2 mt-auto md:mt-0">🦉</div>
             <h1 class="text-4xl md:text-6xl font-black mb-1 uppercase tracking-tighter italic">Žodžių Naktis</h1>
             
-            <div class="w-full max-w-md bg-white/5 rounded-3xl p-4 mb-4 border border-white/10 mt-4">
-                <p class="mb-3 text-sm font-bold uppercase tracking-widest opacity-60">Pasirink sunkumą:</p>
+            <div class="w-full max-w-md bg-white/5 rounded-3xl p-4 mb-4 border border-white/10 mt-2">
+                <p class="mb-3 text-sm font-bold uppercase tracking-widest opacity-60">Sunkumo lygis:</p>
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <button onclick="selectDifficulty('easy')" id="btn-easy" class="diff-btn bg-green-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-green-700">🟢 Lengvas</button>
-                    <button onclick="selectDifficulty('medium')" id="btn-medium" class="diff-btn bg-yellow-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-yellow-700">🟡 Vidutinis</button>
-                    <button onclick="selectDifficulty('hard')" id="btn-hard" class="diff-btn bg-rose-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-rose-700">🔴 Sunkus</button>
-                    <button onclick="selectDifficulty('mixed')" id="btn-mixed" class="diff-btn bg-violet-500 text-white font-bold py-3 rounded-xl shadow-md ring-4 ring-violet-300 dark:ring-violet-800 transition-all border-b-4 border-violet-700">🎲 Mišrus</button>
+                    <button onclick="selectDifficulty('easy')" id="btn-easy" class="diff-btn bg-green-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-green-700 flex flex-col items-center justify-center leading-none">
+                        <span class="text-xl mb-1">🟢</span>
+                        <span class="text-xs">LENGVAS (3-4)</span>
+                    </button>
+                    <button onclick="selectDifficulty('medium')" id="btn-medium" class="diff-btn bg-yellow-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-yellow-700 flex flex-col items-center justify-center leading-none">
+                        <span class="text-xl mb-1">🟡</span>
+                        <span class="text-xs">VIDUTINIS (5-6)</span>
+                    </button>
+                    <button onclick="selectDifficulty('hard')" id="btn-hard" class="diff-btn bg-rose-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-rose-700 flex flex-col items-center justify-center leading-none">
+                        <span class="text-xl mb-1">🔴</span>
+                        <span class="text-xs">SUNKUS (7+)</span>
+                    </button>
+                    <button onclick="selectDifficulty('mixed')" id="btn-mixed" class="diff-btn bg-violet-500 text-white font-bold py-3 rounded-xl shadow-md ring-4 ring-violet-300 dark:ring-violet-800 transition-all border-b-4 border-violet-700 flex flex-col items-center justify-center leading-none">
+                        <span class="text-xl mb-1">🎲</span>
+                        <span class="text-xs">MIŠRUS</span>
+                    </button>
                 </div>
             </div>
 
@@ -180,7 +195,7 @@
                 </div>
             </div>
 
-            <button id="pwa-install-btn" class="hidden mb-auto md:mb-0 bg-slate-800 dark:bg-slate-700 text-white font-bold py-3 px-6 rounded-xl shadow-md border border-slate-600 flex items-center gap-2 hover:bg-slate-600 transition-all">
+            <button id="pwa-install-btn" class="hidden mb-auto md:mb-0 bg-slate-800 dark:bg-slate-700 text-white font-bold py-3 px-6 rounded-xl shadow-md border border-slate-600 flex items-center gap-2 hover:bg-slate-600 transition-all text-sm">
                 📲 Įdiegti programėlę
             </button>
         </div>
@@ -188,7 +203,7 @@
         <!-- Game View -->
         <div id="game-view" class="flex-1 flex flex-col items-center justify-between py-2 px-2 hidden w-full overflow-y-auto">
             
-            <div class="flex flex-col items-center justify-center flex-grow w-full min-h-[30vh]">
+            <div class="flex flex-col items-center justify-center flex-grow-[2] w-full min-h-0">
                 <div id="emoji-box" class="text-7xl md:text-[9rem] select-none drop-shadow-2xl transition-all duration-500 cursor-default text-center leading-normal mb-2">
                     🌙
                 </div>
@@ -198,15 +213,14 @@
                 </div>
             </div>
 
-            <!-- Footer Section with extra safe padding -->
-            <div class="w-full flex flex-col items-center flex-shrink-0 justify-end safe-bottom">
-                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-2 mb-4 w-full px-1 min-h-[50px]">
+            <div class="w-full flex flex-col items-center flex-grow-[3] justify-end pb-2 md:pb-4 safe-bottom">
+                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-3 mb-4 md:mb-6 w-full px-1 min-h-[50px]">
                     <!-- Slots -->
                 </div>
 
                 <div class="w-full max-w-xl p-3 md:p-8 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-slate-600 flex flex-col justify-center shadow-lg" style="background-color: var(--pool-bg)">
                     <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-2 tracking-widest italic" style="color: var(--text-main)">Raidžių bankas:</p>
-                    <div id="letters-pool" class="flex flex-wrap justify-center gap-2 md:gap-3 min-h-[50px]">
+                    <div id="letters-pool" class="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[50px]">
                         <!-- Letters -->
                     </div>
                 </div>
@@ -256,7 +270,7 @@
         
         <!-- Stats Modal -->
         <div id="stats-view" class="fullscreen-overlay hidden absolute inset-0 z-[140] flex flex-col">
-            <div class="p-4 flex justify-between items-center flex-shrink-0 pt-4 md:pt-4 border-b border-black/5 dark:border-white/5 bg-slate-100 dark:bg-slate-800" style="padding-top: calc(1rem + env(safe-area-inset-top));">
+            <div class="p-4 flex justify-between items-center flex-shrink-0 pt-12 md:pt-4 border-b border-black/5 dark:border-white/5 bg-slate-100 dark:bg-slate-800" style="padding-top: calc(1rem + env(safe-area-inset-top));">
                 <h2 class="text-lg font-black uppercase italic">Mano pasiekimai</h2>
                 <button onclick="toggleStats()" class="bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Uždaryti</button>
             </div>
@@ -313,35 +327,38 @@
             }
         }
 
-        // --- WORDS DATA (3 LEVELS) ---
+        // --- CORRECTED & BALANCED WORD DATA ---
         const allWords = [
             // LEVEL 1: EASY (3-4 letters)
-            { w: 'ŠUO', e: '🐶', l: 'easy' }, { w: 'KATĖ', e: '🐱', l: 'easy' }, { w: 'NAMAS', e: '🏠', l: 'easy' },
-            { w: 'PELĖ', e: '🐭', l: 'easy' }, { w: 'BITĖ', e: '🐝', l: 'easy' }, { w: 'MUSĖ', e: '🪰', l: 'easy' },
-            { w: 'OŽYS', e: '🐐', l: 'easy' }, { w: 'EŽYS', e: '🦔', l: 'easy' }, { w: 'LŪPA', e: '👄', l: 'easy' },
-            { w: 'AKIS', e: '👁️', l: 'easy' }, { w: 'NOSIS', e: '👃', l: 'easy' }, { w: 'KOJA', e: '🦵', l: 'easy' },
-            { w: 'UOGA', e: '🫐', l: 'easy' }, { w: 'SULA', e: '🧃', l: 'easy' }, { w: 'JŪRA', e: '🌊', l: 'easy' },
-            { w: 'UPĖ', e: '🏞️', l: 'easy' }, { w: 'ŽĄSIS', e: '🪿', l: 'easy' }, { w: 'GĖLĖ', e: '🌸', l: 'easy' },
-            { w: 'ORA', e: '💨', l: 'easy' }, { w: 'ROŽĖ', e: '🌹', l: 'easy' },
+            { w: 'ŠUO', e: '🐶', l: 'easy' }, { w: 'KATĖ', e: '🐱', l: 'easy' }, { w: 'PELĖ', e: '🐭', l: 'easy' },
+            { w: 'BITĖ', e: '🐝', l: 'easy' }, { w: 'MUSĖ', e: '🪰', l: 'easy' }, { w: 'OŽYS', e: '🐐', l: 'easy' },
+            { w: 'EŽYS', e: '🦔', l: 'easy' }, { w: 'LŪPA', e: '👄', l: 'easy' }, { w: 'AKIS', e: '👁️', l: 'easy' },
+            { w: 'KOJA', e: '🦵', l: 'easy' }, { w: 'UOGA', e: '🫐', l: 'easy' }, { w: 'PICA', e: '🍕', l: 'easy' }, // New
+            { w: 'JŪRA', e: '🌊', l: 'easy' }, { w: 'UPĖ', e: '🏞️', l: 'easy' }, { w: 'ORAS', e: '💨', l: 'easy' },
+            { w: 'ROŽĖ', e: '🌹', l: 'easy' }, { w: 'LĖLĖ', e: '🎎', l: 'easy' },
+            { w: 'LOVA', e: '🛏️', l: 'easy' }, { w: 'LAMA', e: '🦙', l: 'easy' }, // New
+            { w: 'MAMA', e: '👩', l: 'easy' },
 
             // LEVEL 2: MEDIUM (5-6 letters)
-            { w: 'SAULĖ', e: '☀️', l: 'medium' }, { w: 'MEDIS', e: '🌳', l: 'medium' }, { w: 'LOVA', e: '🛏️', l: 'medium' },
+            { w: 'NAMAS', e: '🏠', l: 'medium' }, { w: 'NOSIS', e: '👃', l: 'medium' },
+            { w: 'SAULĖ', e: '☀️', l: 'medium' }, { w: 'MEDIS', e: '🌳', l: 'medium' }, { w: 'PILIS', e: '🏰', l: 'medium' }, // Moved & Corrected
             { w: 'KĖDĖ', e: '🪑', l: 'medium' }, { w: 'DURYS', e: '🚪', l: 'medium' }, { w: 'LANGAS', e: '🪟', l: 'medium' },
             { w: 'RANKA', e: '🤚', l: 'medium' }, { w: 'VAIKAS', e: '👶', l: 'medium' }, { w: 'ŽUVIS', e: '🐟', l: 'medium' },
             { w: 'VILKAS', e: '🐺', l: 'medium' }, { w: 'MEŠKA', e: '🐻', l: 'medium' }, { w: 'TIGRAS', e: '🐅', l: 'medium' },
-            { w: 'ZEBRAS', e: '🦓', l: 'medium' }, { w: 'ARBATA', e: '🍵', l: 'medium' }, { w: 'PIENAS', e: '🥛', l: 'medium' },
-            { w: 'DUONA', e: '🍞', l: 'medium' }, { w: 'SŪRIS', e: '🧀', l: 'medium' }, { w: 'TORTAS', e: '🎂', l: 'medium' },
-            { w: 'MORKA', e: '🥕', l: 'medium' }, { w: 'BATAI', e: '👟👟', l: 'medium' }, { w: 'LEDAI', e: '🍦🍦', l: 'medium' },
-            { w: 'LAIVAS', e: '🚢', l: 'medium' }, { w: 'VARLĖ', e: '🐸', l: 'medium' }, { w: 'SNIEGAS', e: '🌨️', l: 'medium' },
+            { w: 'ZEBRAS', e: '🦓', l: 'medium' }, { w: 'PIENAS', e: '🥛', l: 'medium' }, { w: 'DUONA', e: '🍞', l: 'medium' }, 
+            { w: 'SŪRIS', e: '🧀', l: 'medium' }, { w: 'MORKA', e: '🥕', l: 'medium' }, { w: 'BATAI', e: '👟👟', l: 'medium' }, 
+            { w: 'LEDAI', e: '🍦🍦', l: 'medium' }, { w: 'VARLĖ', e: '🐸', l: 'medium' }, { w: 'ŽĄSIS', e: '🪿', l: 'medium' },
+            { w: 'MAŠINA', e: '🚗', l: 'medium' }, { w: 'RAKETA', e: '🚀', l: 'medium' },
 
-            // LEVEL 3: HARD (7+ letters, complex spelling)
+            // LEVEL 3: HARD (7+ letters)
+            { w: 'SNIEGAS', e: '🌨️', l: 'hard' }, 
             { w: 'OBUOLYS', e: '🍎', l: 'hard' }, { w: 'BRAŠKĖ', e: '🍓', l: 'hard' }, { w: 'BANANAS', e: '🍌', l: 'hard' },
             { w: 'APELSINAS', e: '🍊', l: 'hard' }, { w: 'CITRINA', e: '🍋', l: 'hard' }, { w: 'AGURKAS', e: '🥒', l: 'hard' },
             { w: 'POMIDORAS', e: '🍅', l: 'hard' }, { w: 'DRAMBLYS', e: '🐘', l: 'hard' }, { w: 'ŽIRAFA', e: '🦒', l: 'hard' },
             { w: 'BEŽDŽIONĖ', e: '🐒', l: 'hard' }, { w: 'KROKODILAS', e: '🐊', l: 'hard' }, { w: 'LĖKTUVAS', e: '✈️', l: 'hard' },
-            { w: 'TRAUKINYS', e: '🚂', l: 'hard' }, { w: 'MAŠINA', e: '🚗', l: 'hard' }, { w: 'DVIRATIS', e: '🚲', l: 'hard' },
+            { w: 'TRAUKINYS', e: '🚂', l: 'hard' }, { w: 'DVIRATIS', e: '🚲', l: 'hard' },
             { w: 'TELEFONAS', e: '📱', l: 'hard' }, { w: 'ŽVAIGŽDĖ', e: '⭐', l: 'hard' }, { w: 'DRUGELIS', e: '🦋', l: 'hard' },
-            { w: 'PASPIRTUKAS', e: '🛴', l: 'hard' }, { w: 'VAIVORYKŠTĖ', e: '🌈', l: 'hard' }
+            { w: 'PASPIRTUKAS', e: '🛴', l: 'hard' }, { w: 'VAIVORYKŠTĖ', e: '🌈', l: 'hard' }, { w: 'ŠOKOLADAS', e: '🍫', l: 'hard' }
         ];
 
         let gameWords = [];
@@ -594,7 +611,6 @@
             });
         }
 
-        // Initialize defaults
         selectDifficulty('mixed');
     </script>
 </body>
