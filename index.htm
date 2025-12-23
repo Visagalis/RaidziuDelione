@@ -27,7 +27,7 @@
             --text-muted: #94a3b8;
             --border-color: #334155;
             --pool-bg: #0f172a;
-            --overlay-bg: #0f172a; /* Tamsus fonas overlays */
+            --overlay-bg: #0f172a;
         }
 
         body {
@@ -35,7 +35,7 @@
             background-color: var(--bg-color);
             color: var(--text-main);
             height: 100vh;
-            height: 100dvh;
+            height: 100dvh; /* Dynamic viewport height */
             margin: 0;
             overflow: hidden;
             display: flex;
@@ -44,11 +44,11 @@
             transition: all 0.3s ease;
         }
 
-        /* Bendras stilius visiems pilno ekrano langams (Start, Win, End) */
         .fullscreen-overlay {
             background-color: var(--overlay-bg);
             color: var(--text-main);
             transition: background-color 0.3s ease, color 0.3s ease;
+            padding-bottom: env(safe-area-inset-bottom); /* Safe area for overlays */
         }
 
         .main-card {
@@ -58,8 +58,8 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            padding-top: env(safe-area-inset-top);
-            padding-bottom: env(safe-area-inset-bottom);
+            /* Remove main padding to handle scroll areas individually */
+            padding-top: env(safe-area-inset-top); 
             padding-left: env(safe-area-inset-left);
             padding-right: env(safe-area-inset-right);
         }
@@ -73,7 +73,6 @@
                 margin: 1rem;
                 max-height: 95vh;
                 padding-top: 0;
-                padding-bottom: 0;
             }
         }
 
@@ -124,9 +123,13 @@
         
         .star-gold { color: #fbbf24; text-shadow: 0 0 8px rgba(251, 191, 36, 0.4); }
         .star-lost { color: #94a3b8; opacity: 0.2; }
+
+        /* Ensure bottom area has safe spacing */
+        .safe-bottom {
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+        }
     </style>
 </head>
-<!-- Pradedame su dark-mode klase -->
 <body class="dark-mode">
 
     <div id="main-app" class="main-card max-w-4xl relative overflow-hidden border-0 md:border-8" style="border-color: var(--border-color)">
@@ -152,23 +155,40 @@
             </div>
         </div>
 
-        <!-- Start Screen (Naudoja fullscreen-overlay klasę) -->
-        <div id="start-screen" class="fullscreen-overlay absolute inset-0 z-[110] flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
-            <div class="text-8xl mb-4 mt-auto md:mt-0">🦉</div>
-            <h1 class="text-4xl md:text-6xl font-black mb-2 uppercase tracking-tighter italic">Žodžių Naktis</h1>
-            <p class="mb-8 text-lg font-bold" style="color: var(--text-muted)">Kiek žodžių mokysimės?</p>
-            <div class="grid grid-cols-2 gap-3 w-full max-w-md mb-auto md:mb-0">
-                <button onclick="startGame(5)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">5</button>
-                <button onclick="startGame(10)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">10</button>
-                <button onclick="startGame(20)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">20</button>
-                <button onclick="startGame(30)" class="bg-sky-500 hover:bg-sky-600 text-white font-black py-4 rounded-2xl text-2xl shadow-lg active:scale-95">Visi</button>
+        <!-- Start Screen -->
+        <div id="start-screen" class="fullscreen-overlay absolute inset-0 z-[110] flex flex-col items-center justify-center p-4 text-center overflow-y-auto safe-bottom">
+            <div class="text-8xl mb-2 mt-auto md:mt-0">🦉</div>
+            <h1 class="text-4xl md:text-6xl font-black mb-1 uppercase tracking-tighter italic">Žodžių Naktis</h1>
+            
+            <div class="w-full max-w-md bg-white/5 rounded-3xl p-4 mb-4 border border-white/10 mt-4">
+                <p class="mb-3 text-sm font-bold uppercase tracking-widest opacity-60">Pasirink sunkumą:</p>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <button onclick="selectDifficulty('easy')" id="btn-easy" class="diff-btn bg-green-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-green-700">🟢 Lengvas</button>
+                    <button onclick="selectDifficulty('medium')" id="btn-medium" class="diff-btn bg-yellow-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-yellow-700">🟡 Vidutinis</button>
+                    <button onclick="selectDifficulty('hard')" id="btn-hard" class="diff-btn bg-rose-500 text-white font-bold py-3 rounded-xl shadow-md opacity-50 hover:opacity-100 transition-all border-b-4 border-rose-700">🔴 Sunkus</button>
+                    <button onclick="selectDifficulty('mixed')" id="btn-mixed" class="diff-btn bg-violet-500 text-white font-bold py-3 rounded-xl shadow-md ring-4 ring-violet-300 dark:ring-violet-800 transition-all border-b-4 border-violet-700">🎲 Mišrus</button>
+                </div>
             </div>
+
+            <div class="w-full max-w-md bg-white/5 rounded-3xl p-4 mb-6 border border-white/10">
+                <p class="mb-3 text-sm font-bold uppercase tracking-widest opacity-60">Kiek žodžių?</p>
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="startGame(5)" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl hover:bg-sky-400 hover:text-white transition-colors">5</button>
+                    <button onclick="startGame(10)" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl hover:bg-sky-400 hover:text-white transition-colors">10</button>
+                    <button onclick="startGame(20)" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl hover:bg-sky-400 hover:text-white transition-colors">20</button>
+                    <button onclick="startGame('all')" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-white font-bold py-3 rounded-xl hover:bg-sky-400 hover:text-white transition-colors">Visi</button>
+                </div>
+            </div>
+
+            <button id="pwa-install-btn" class="hidden mb-auto md:mb-0 bg-slate-800 dark:bg-slate-700 text-white font-bold py-3 px-6 rounded-xl shadow-md border border-slate-600 flex items-center gap-2 hover:bg-slate-600 transition-all">
+                📲 Įdiegti programėlę
+            </button>
         </div>
 
         <!-- Game View -->
         <div id="game-view" class="flex-1 flex flex-col items-center justify-between py-2 px-2 hidden w-full overflow-y-auto">
             
-            <div class="flex flex-col items-center justify-center flex-grow-[2] w-full min-h-0">
+            <div class="flex flex-col items-center justify-center flex-grow w-full min-h-[30vh]">
                 <div id="emoji-box" class="text-7xl md:text-[9rem] select-none drop-shadow-2xl transition-all duration-500 cursor-default text-center leading-normal mb-2">
                     🌙
                 </div>
@@ -178,22 +198,23 @@
                 </div>
             </div>
 
-            <div class="w-full flex flex-col items-center flex-grow-[3] justify-end pb-2 md:pb-4">
-                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-3 mb-4 md:mb-6 w-full px-1 min-h-[50px]">
+            <!-- Footer Section with extra safe padding -->
+            <div class="w-full flex flex-col items-center flex-shrink-0 justify-end safe-bottom">
+                <div id="word-slots" class="flex flex-wrap justify-center items-center gap-1 md:gap-2 mb-4 w-full px-1 min-h-[50px]">
                     <!-- Slots -->
                 </div>
 
-                <div class="w-full max-w-xl p-3 md:p-8 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-slate-600 flex flex-col justify-center" style="background-color: var(--pool-bg)">
+                <div class="w-full max-w-xl p-3 md:p-8 rounded-[2rem] border-2 border-dashed border-gray-300 dark:border-slate-600 flex flex-col justify-center shadow-lg" style="background-color: var(--pool-bg)">
                     <p class="text-center text-[10px] font-bold opacity-30 uppercase mb-2 tracking-widest italic" style="color: var(--text-main)">Raidžių bankas:</p>
-                    <div id="letters-pool" class="flex flex-wrap justify-center gap-2 md:gap-4 min-h-[50px]">
+                    <div id="letters-pool" class="flex flex-wrap justify-center gap-2 md:gap-3 min-h-[50px]">
                         <!-- Letters -->
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Success Overlay (Naudoja fullscreen-overlay klasę) -->
-        <div id="success-overlay" class="fullscreen-overlay hidden absolute inset-0 z-[120] flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
+        <!-- Success Overlay -->
+        <div id="success-overlay" class="fullscreen-overlay hidden absolute inset-0 z-[120] flex flex-col items-center justify-center p-4 text-center overflow-y-auto safe-bottom">
             <div id="success-emoji-large" class="text-[8rem] md:text-[11rem] mb-2 win-anim drop-shadow-2xl mt-auto md:mt-0">🌟</div>
             <h3 class="text-3xl md:text-6xl font-black text-emerald-500 mb-2 uppercase italic">TEISINGAI!</h3>
             
@@ -209,8 +230,8 @@
             </button>
         </div>
 
-        <!-- End Screen (Naudoja fullscreen-overlay klasę) -->
-        <div id="end-screen" class="fullscreen-overlay hidden absolute inset-0 z-[130] flex flex-col items-center justify-center p-4 text-center overflow-y-auto">
+        <!-- End Screen -->
+        <div id="end-screen" class="fullscreen-overlay hidden absolute inset-0 z-[130] flex flex-col items-center justify-center p-4 text-center overflow-y-auto safe-bottom">
             <div class="text-[6rem] md:text-[10rem] mb-4 mt-auto md:mt-0">🏆</div>
             <h2 class="text-4xl md:text-7xl font-black mb-4 uppercase italic">BAIGTA!</h2>
             
@@ -235,11 +256,11 @@
         
         <!-- Stats Modal -->
         <div id="stats-view" class="fullscreen-overlay hidden absolute inset-0 z-[140] flex flex-col">
-            <div class="p-4 flex justify-between items-center flex-shrink-0 pt-12 md:pt-4 border-b border-black/5 dark:border-white/5">
+            <div class="p-4 flex justify-between items-center flex-shrink-0 pt-4 md:pt-4 border-b border-black/5 dark:border-white/5 bg-slate-100 dark:bg-slate-800" style="padding-top: calc(1rem + env(safe-area-inset-top));">
                 <h2 class="text-lg font-black uppercase italic">Mano pasiekimai</h2>
                 <button onclick="toggleStats()" class="bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs">Uždaryti</button>
             </div>
-            <div class="flex-1 overflow-y-auto p-4 custom-scroll">
+            <div class="flex-1 overflow-y-auto p-4 custom-scroll safe-bottom">
                 <table class="w-full text-left">
                     <tbody id="stats-table-body"></tbody>
                 </table>
@@ -248,76 +269,79 @@
     </div>
 
     <script>
+        // --- PWA INSTALL LOGIC ---
+        let deferredPrompt;
+        const pwaBtn = document.getElementById('pwa-install-btn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            pwaBtn.classList.remove('hidden');
+        });
+        pwaBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') { deferredPrompt = null; pwaBtn.classList.add('hidden'); }
+            }
+        });
+
+        // --- AUDIO ENGINE ---
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         let audioCtx = null;
-
         function playSound(type) {
             if (!audioCtx) audioCtx = new AudioCtx();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
             const now = audioCtx.currentTime;
-
             if (type === 'correct') {
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(550, now);
-                osc.frequency.exponentialRampToValueAtTime(1100, now + 0.1);
-                gain.gain.setValueAtTime(0.2, now);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(550, now); osc.frequency.exponentialRampToValueAtTime(1100, now + 0.1);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                 osc.start(now); osc.stop(now + 0.3);
             } else if (type === 'error') {
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(120, now);
-                osc.frequency.linearRampToValueAtTime(45, now + 0.2);
-                gain.gain.setValueAtTime(0.1, now);
-                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(120, now); osc.frequency.linearRampToValueAtTime(45, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
                 osc.start(now); osc.stop(now + 0.2);
             } else if (type === 'win') {
                 [523, 659, 783, 1046].forEach((f, i) => {
-                    const o = audioCtx.createOscillator();
-                    const g = audioCtx.createGain();
+                    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
                     o.connect(g); g.connect(audioCtx.destination);
                     o.frequency.setValueAtTime(f, now + (i * 0.1));
-                    g.gain.setValueAtTime(0.1, now + (i * 0.1));
-                    g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 0.4);
+                    g.gain.setValueAtTime(0.1, now + (i * 0.1)); g.gain.exponentialRampToValueAtTime(0.01, now + (i * 0.1) + 0.4);
                     o.start(now + (i * 0.1)); o.stop(now + (i * 0.1) + 0.4);
                 });
             }
         }
 
-        const wordsData = [
-            { word: 'KATĖ', emoji: '🐱' }, 
-            { word: 'ŠUO', emoji: '🐶' },
-            { word: 'NAMAS', emoji: '🏠' }, 
-            { word: 'GĖLĖ', emoji: '🌸' },
-            { word: 'MEDIS', emoji: '🌳' }, 
-            { word: 'SAULĖ', emoji: '☀️' },
-            { word: 'RATAS', emoji: '🛞' }, 
-            { word: 'BATAI', emoji: '👟👟' }, 
-            { word: 'MORKA', emoji: '🥕' }, 
-            { word: 'PELĖ', emoji: '🐭' },
-            { word: 'BITĖ', emoji: '🐝' }, 
-            { word: 'KNYGA', emoji: '📖' },
-            { word: 'VARLĖ', emoji: '🐸' }, 
-            { word: 'LEDAI', emoji: '🍦🍦' }, 
-            { word: 'SŪRIS', emoji: '🧀' }, 
-            { word: 'ŽUVIS', emoji: '🐟' },
-            { word: 'LOVA', emoji: '🛏️' },
-            { word: 'KĖDĖ', emoji: '🪑' },
-            { word: 'DUONA', emoji: '🍞' }, 
-            { word: 'PIENAS', emoji: '🥛' },
-            { word: 'OBUOLYS', emoji: '🍎' }, 
-            { word: 'VIŠTA', emoji: '🐔' },
-            { word: 'BRAŠKĖ', emoji: '🍓' }, 
-            { word: 'KELIAS', emoji: '🛣️' },
-            { word: 'MIŠKAS', emoji: '🌲🌳' }, 
-            { word: 'SNIEGAS', emoji: '🌨️' },
-            { word: 'JŪRA', emoji: '🌊' }, 
-            { word: 'KRIAUŠĖ', emoji: '🍐' },
-            { word: 'LAPĖ', emoji: '🦊' }, 
-            { word: 'MEŠKA', emoji: '🐻' }
+        // --- WORDS DATA (3 LEVELS) ---
+        const allWords = [
+            // LEVEL 1: EASY (3-4 letters)
+            { w: 'ŠUO', e: '🐶', l: 'easy' }, { w: 'KATĖ', e: '🐱', l: 'easy' }, { w: 'NAMAS', e: '🏠', l: 'easy' },
+            { w: 'PELĖ', e: '🐭', l: 'easy' }, { w: 'BITĖ', e: '🐝', l: 'easy' }, { w: 'MUSĖ', e: '🪰', l: 'easy' },
+            { w: 'OŽYS', e: '🐐', l: 'easy' }, { w: 'EŽYS', e: '🦔', l: 'easy' }, { w: 'LŪPA', e: '👄', l: 'easy' },
+            { w: 'AKIS', e: '👁️', l: 'easy' }, { w: 'NOSIS', e: '👃', l: 'easy' }, { w: 'KOJA', e: '🦵', l: 'easy' },
+            { w: 'UOGA', e: '🫐', l: 'easy' }, { w: 'SULA', e: '🧃', l: 'easy' }, { w: 'JŪRA', e: '🌊', l: 'easy' },
+            { w: 'UPĖ', e: '🏞️', l: 'easy' }, { w: 'ŽĄSIS', e: '🪿', l: 'easy' }, { w: 'GĖLĖ', e: '🌸', l: 'easy' },
+            { w: 'ORA', e: '💨', l: 'easy' }, { w: 'ROŽĖ', e: '🌹', l: 'easy' },
+
+            // LEVEL 2: MEDIUM (5-6 letters)
+            { w: 'SAULĖ', e: '☀️', l: 'medium' }, { w: 'MEDIS', e: '🌳', l: 'medium' }, { w: 'LOVA', e: '🛏️', l: 'medium' },
+            { w: 'KĖDĖ', e: '🪑', l: 'medium' }, { w: 'DURYS', e: '🚪', l: 'medium' }, { w: 'LANGAS', e: '🪟', l: 'medium' },
+            { w: 'RANKA', e: '🤚', l: 'medium' }, { w: 'VAIKAS', e: '👶', l: 'medium' }, { w: 'ŽUVIS', e: '🐟', l: 'medium' },
+            { w: 'VILKAS', e: '🐺', l: 'medium' }, { w: 'MEŠKA', e: '🐻', l: 'medium' }, { w: 'TIGRAS', e: '🐅', l: 'medium' },
+            { w: 'ZEBRAS', e: '🦓', l: 'medium' }, { w: 'ARBATA', e: '🍵', l: 'medium' }, { w: 'PIENAS', e: '🥛', l: 'medium' },
+            { w: 'DUONA', e: '🍞', l: 'medium' }, { w: 'SŪRIS', e: '🧀', l: 'medium' }, { w: 'TORTAS', e: '🎂', l: 'medium' },
+            { w: 'MORKA', e: '🥕', l: 'medium' }, { w: 'BATAI', e: '👟👟', l: 'medium' }, { w: 'LEDAI', e: '🍦🍦', l: 'medium' },
+            { w: 'LAIVAS', e: '🚢', l: 'medium' }, { w: 'VARLĖ', e: '🐸', l: 'medium' }, { w: 'SNIEGAS', e: '🌨️', l: 'medium' },
+
+            // LEVEL 3: HARD (7+ letters, complex spelling)
+            { w: 'OBUOLYS', e: '🍎', l: 'hard' }, { w: 'BRAŠKĖ', e: '🍓', l: 'hard' }, { w: 'BANANAS', e: '🍌', l: 'hard' },
+            { w: 'APELSINAS', e: '🍊', l: 'hard' }, { w: 'CITRINA', e: '🍋', l: 'hard' }, { w: 'AGURKAS', e: '🥒', l: 'hard' },
+            { w: 'POMIDORAS', e: '🍅', l: 'hard' }, { w: 'DRAMBLYS', e: '🐘', l: 'hard' }, { w: 'ŽIRAFA', e: '🦒', l: 'hard' },
+            { w: 'BEŽDŽIONĖ', e: '🐒', l: 'hard' }, { w: 'KROKODILAS', e: '🐊', l: 'hard' }, { w: 'LĖKTUVAS', e: '✈️', l: 'hard' },
+            { w: 'TRAUKINYS', e: '🚂', l: 'hard' }, { w: 'MAŠINA', e: '🚗', l: 'hard' }, { w: 'DVIRATIS', e: '🚲', l: 'hard' },
+            { w: 'TELEFONAS', e: '📱', l: 'hard' }, { w: 'ŽVAIGŽDĖ', e: '⭐', l: 'hard' }, { w: 'DRUGELIS', e: '🦋', l: 'hard' },
+            { w: 'PASPIRTUKAS', e: '🛴', l: 'hard' }, { w: 'VAIVORYKŠTĖ', e: '🌈', l: 'hard' }
         ];
 
         let gameWords = [];
@@ -333,6 +357,7 @@
         let maxWordsCount = 10;
         let currentWordStarPotential = 0;
         let isRetryMode = false;
+        let selectedDifficulty = 'mixed';
 
         const slotsEl = document.getElementById('word-slots');
         const poolEl = document.getElementById('letters-pool');
@@ -363,25 +388,40 @@
             }
         }
 
+        function selectDifficulty(diff) {
+            selectedDifficulty = diff;
+            const btns = document.querySelectorAll('.diff-btn');
+            btns.forEach(btn => {
+                btn.classList.remove('opacity-100', 'ring-4', 'ring-white');
+                btn.classList.add('opacity-50');
+            });
+            const activeBtn = document.getElementById('btn-' + diff);
+            activeBtn.classList.remove('opacity-50');
+            activeBtn.classList.add('opacity-100', 'ring-4', 'ring-white');
+        }
+
         function startGame(count) {
             isRetryMode = false;
-            maxWordsCount = Math.min(count, wordsData.length);
-            gameWords = shuffle([...wordsData]).slice(0, maxWordsCount);
+            let filteredWords = [];
+            if (selectedDifficulty === 'mixed') {
+                filteredWords = [...allWords];
+            } else {
+                filteredWords = allWords.filter(w => w.l === selectedDifficulty);
+            }
+            let actualCount = count === 'all' ? filteredWords.length : Math.min(count, filteredWords.length);
+            gameWords = shuffle(filteredWords).slice(0, actualCount);
+            maxWordsCount = gameWords.length;
             wordMistakes = {}; 
-            
-            totalPossibleStars = gameWords.reduce((acc, obj) => acc + obj.word.length, 0);
+            totalPossibleStars = gameWords.reduce((acc, obj) => acc + obj.w.length, 0);
             totalStarsEarned = 0;
-            
             currentIndex = 0;
             updateStarDisplay();
             maxWordsNumEl.textContent = maxWordsCount;
-            
             document.getElementById('start-screen').classList.add('hidden');
             document.getElementById('header-ui').classList.remove('hidden');
             document.getElementById('header-ui').classList.add('flex');
             document.getElementById('game-view').classList.remove('hidden');
             document.getElementById('game-view').classList.add('flex');
-            
             loadWord();
         }
 
@@ -391,19 +431,16 @@
 
         function retryMistakes() {
             isRetryMode = true;
-            const imperfects = gameWords.filter(w => (wordMistakes[w.word] || 0) > 0);
-            
+            const imperfects = gameWords.filter(w => (wordMistakes[w.w] || 0) > 0);
             imperfects.forEach(w => {
-                const mistakes = wordMistakes[w.word];
-                const length = w.word.length;
+                const mistakes = wordMistakes[w.w];
+                const length = w.w.length;
                 const earnedForThis = Math.max(1, length - mistakes);
                 totalStarsEarned -= earnedForThis;
             });
             updateStarDisplay();
-
             gameWords = shuffle([...imperfects]);
-            gameWords.forEach(w => wordMistakes[w.word] = 0);
-            
+            gameWords.forEach(w => wordMistakes[w.w] = 0);
             currentIndex = 0;
             document.getElementById('end-screen').classList.add('hidden');
             loadWord();
@@ -411,32 +448,23 @@
 
         function loadWord() {
             currentWordObj = gameWords[currentIndex];
-            const word = currentWordObj.word;
+            const word = currentWordObj.w;
             userProgress = Array(word.length).fill(null);
             lockedSlots = Array(word.length).fill(false);
-            
             currentWordStarPotential = word.length;
-            
-            currentPool = word.split('').map((char, index) => ({
-                char: char,
-                id: index,
-                used: false
-            }));
+            currentPool = word.split('').map((char, index) => ({ char: char, id: index, used: false }));
             shuffle(currentPool);
-
             if (!wordMistakes[word]) wordMistakes[word] = 0;
-
-            emojiEl.textContent = currentWordObj.emoji;
+            emojiEl.textContent = currentWordObj.e;
             currentWordNumEl.textContent = isRetryMode ? '↺' : (currentIndex + 1);
             overlay.classList.add('hidden');
-            
             updateStarPotentialUI();
             render();
         }
 
         function updateStarPotentialUI() {
             starPotentialUI.innerHTML = '';
-            for (let i = 0; i < currentWordObj.word.length; i++) {
+            for (let i = 0; i < currentWordObj.w.length; i++) {
                 const star = document.createElement('span');
                 star.textContent = '⭐';
                 star.className = i < currentWordStarPotential ? 'star-gold' : 'star-lost';
@@ -446,10 +474,9 @@
 
         function render() {
             slotsEl.innerHTML = '';
-            const wordLen = currentWordObj.word.length;
-            const baseWidth = Math.min(16, 82 / wordLen); 
+            const wordLen = currentWordObj.w.length;
+            const baseWidth = Math.min(16, 85 / wordLen); 
             const fontSize = Math.min(3.2, 14 / wordLen);
-
             userProgress.forEach((char, i) => {
                 const slot = document.createElement('div');
                 slot.style.width = `${baseWidth}vw`;
@@ -457,13 +484,11 @@
                 slot.style.maxWidth = '80px';
                 slot.style.maxHeight = '80px';
                 slot.style.fontSize = `${fontSize}rem`;
-                
                 slot.className = `border-4 rounded-xl md:rounded-[2rem] flex items-center justify-center font-black letter-tile flex-shrink-0
                                  ${lockedSlots[i] ? 'slot-locked' : char ? 'bg-sky-500 border-sky-700 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 opacity-95 shadow-sm'}`;
                 slot.textContent = char || '';
                 slotsEl.appendChild(slot);
             });
-
             poolEl.innerHTML = '';
             currentPool.forEach(item => {
                 const btn = document.createElement('button');
@@ -478,7 +503,7 @@
         function placeLetter(poolItem) {
             const emptyIdx = userProgress.indexOf(null);
             if (emptyIdx !== -1) {
-                if (currentWordObj.word[emptyIdx] === poolItem.char) {
+                if (currentWordObj.w[emptyIdx] === poolItem.char) {
                     playSound('correct');
                     userProgress[emptyIdx] = poolItem.char;
                     lockedSlots[emptyIdx] = true;
@@ -487,18 +512,15 @@
                     checkWin();
                 } else {
                     playSound('error');
-                    wordMistakes[currentWordObj.word]++;
-                    
+                    wordMistakes[currentWordObj.w]++;
                     if (currentWordStarPotential > 1) {
                         currentWordStarPotential--;
                         updateStarPotentialUI();
                     }
-                    
                     const slots = slotsEl.children;
                     const tempErrorSlot = slots[emptyIdx];
                     tempErrorSlot.textContent = poolItem.char;
                     tempErrorSlot.classList.add('error-shake', 'bg-rose-500', 'border-rose-700', 'text-white');
-                    
                     setTimeout(() => {
                         tempErrorSlot.textContent = '';
                         tempErrorSlot.classList.remove('error-shake', 'bg-rose-500', 'border-rose-700', 'text-white');
@@ -511,11 +533,9 @@
             if (lockedSlots.every(s => s === true)) {
                 totalStarsEarned += currentWordStarPotential;
                 updateStarDisplay();
-                
                 playSound('win');
-                successEmojiLarge.textContent = currentWordObj.emoji;
-                successWordText.textContent = currentWordObj.word;
-                
+                successEmojiLarge.textContent = currentWordObj.e;
+                successWordText.textContent = currentWordObj.w;
                 const starsOverlayContainer = document.getElementById('success-stars-container');
                 starsOverlayContainer.innerHTML = '';
                 for(let i=0; i<currentWordStarPotential; i++) {
@@ -525,10 +545,7 @@
                     s.style.animationDelay = `${i * 0.1}s`;
                     starsOverlayContainer.appendChild(s);
                 }
-                
-                setTimeout(() => {
-                    overlay.classList.remove('hidden');
-                }, 400);
+                setTimeout(() => { overlay.classList.remove('hidden'); }, 400);
             }
         }
 
@@ -544,16 +561,13 @@
         function showFinalResults() {
             document.getElementById('final-stars-earned').textContent = totalStarsEarned;
             document.getElementById('final-stars-possible').textContent = totalPossibleStars;
-            
-            const imperfects = gameWords.filter(w => (wordMistakes[w.word] || 0) > 0);
-            
+            const imperfects = gameWords.filter(w => (wordMistakes[w.w] || 0) > 0);
             if (imperfects.length > 0) {
                 retryBtn.classList.remove('hidden');
                 retryBtn.textContent = `PATAISYTI KLAIDAS (${imperfects.length}) 🛠️`;
             } else {
                 retryBtn.classList.add('hidden');
             }
-
             document.getElementById('end-screen').classList.remove('hidden');
         }
 
@@ -566,14 +580,12 @@
         function updateStatsTable() {
             const tbody = document.getElementById('stats-table-body');
             tbody.innerHTML = '';
-            
             const stats = gameWords.map(w => ({
-                word: w.word,
-                emoji: w.emoji,
-                mistakes: wordMistakes[w.word] || 0,
+                word: w.w,
+                emoji: w.e,
+                mistakes: wordMistakes[w.w] || 0,
                 finished: gameWords.indexOf(w) < currentIndex
             }));
-
             stats.forEach(item => {
                 const row = document.createElement('tr');
                 row.className = "border-b border-slate-100 dark:border-slate-800";
@@ -581,6 +593,9 @@
                 tbody.appendChild(row);
             });
         }
+
+        // Initialize defaults
+        selectDifficulty('mixed');
     </script>
 </body>
 </html>
